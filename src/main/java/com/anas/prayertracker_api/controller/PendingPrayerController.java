@@ -1,8 +1,11 @@
 package com.anas.prayertracker_api.controller;
 
 import com.anas.prayertracker_api.dto.AddPrayerRequest;
-import com.anas.prayertracker_api.entity.PendingPrayer;
+import com.anas.prayertracker_api.dto.PrayerResponse;
 import com.anas.prayertracker_api.service.PendingPrayerService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -17,8 +20,16 @@ public class PendingPrayerController {
 
     private final PendingPrayerService service;
 
+    @Operation(summary = "Add a pending prayer")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Prayer added successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request"),
+            @ApiResponse(responseCode = "403", description = "Authentication failed or access denied"),
+            @ApiResponse(responseCode = "409", description = "Prayer already exists for this date")
+    })
+
     @PostMapping
-    public PendingPrayer addPrayer(
+    public PrayerResponse addPrayer(
             Authentication authentication,
             @Valid @RequestBody AddPrayerRequest request
     ) {
@@ -28,8 +39,14 @@ public class PendingPrayerController {
         return service.addPrayer(firebaseUid, request);
     }
 
+    @Operation(summary = "Get all pending prayers for the authenticated user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Pending prayers retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "Authentication failed or access denied")
+    })
+
     @GetMapping
-    public List<PendingPrayer> getPendingPrayers(
+    public List<PrayerResponse> getPendingPrayers(
             Authentication authentication
     ) {
 
@@ -37,6 +54,13 @@ public class PendingPrayerController {
 
         return service.getPendingPrayers(firebaseUid);
     }
+
+    @Operation(summary = "Delete a pending prayer")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Prayer deleted successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request"),
+            @ApiResponse(responseCode = "403", description = "Authentication failed or access denied")
+    })
 
     @DeleteMapping
     public void deletePrayer(
